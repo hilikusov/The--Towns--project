@@ -1,60 +1,78 @@
 $(document).ready(function () {
-    $('#btnDelete').click(deleteTown);
-    $('#btnAdd').click(addTown);
-    $('#btnAdd').click(addTown);
-    $('#btnShuffle').click(shuffleTowns);
+    $('#btnDelete').on('click', deleteTown);
+    $('#btnAdd').on('click', addTown);
+    $('#btnShuffle').on('click', shuffleTowns);
 });
 
 function deleteTown() {
-    let townName = $('#townName').val();
+    const townName = $('#townName').val().trim();
     $('#townName').val('');
-    let removed = false;
-    for (let option of $('#towns option')) {
-        if (option.textContent == townName) {
-            removed = true;
-            option.remove();
-        }
+
+    if (!townName) {
+        showMessage('Please enter a town name.');
+        return;
     }
-    if (removed)
-        showMessage(townName + " deleted.");
-    else
-        showMessage(townName + " not found.");
+
+    let removed = false;
+
+    $('#towns option').each(function () {
+        if ($(this).text() === townName) {
+            $(this).remove();
+            removed = true;
+        }
+    });
+
+    showMessage(
+        removed
+            ? `${townName} deleted.`
+            : `${townName} not found.`
+    );
 }
 
 function addTown() {
-    let townName = $('#townNameForAdd').val();
+    const townName = $('#townNameForAdd').val().trim();
     $('#townNameForAdd').val('');
-    $('#towns').append($('<option>').text(townName));
-    $('#result').text(townName + " added.");
-}
 
-function showMessage(msg) {
-    $('#result').text(msg).css("display", "block");
-    setTimeout(function () {
-        $('#result').hide('blind', {}, 500);
-    }, 3000);
-}
+    if (!townName) {
+        showMessage('Please enter a town name.');
+        return;
+    }
 
-function addTown() {
-	let townName = $('#townNameForAdd').val();
-	$('#townNameForAdd').val('');
-	$('#towns').append($('<option>').text(townName));
-	$('#result').text(townName + " added.");
+    $('#towns').append(
+        $('<option>').text(townName)
+    );
+
+    showMessage(`${townName} added.`);
 }
 
 function shuffleTowns() {
-    let towns = $('#towns option').toArray();
-    $('#towns').empty();
-    shuffleArray(towns);
-    $('#towns').append(towns);
-    $('#result').text("Towns shuffled.");
+    const towns = $('#towns option').toArray();
 
-    function shuffleArray(array) {
-        for (var i = array.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var oldElement = array[i];
-            array[i] = array[j];
-            array[j] = oldElement;
-        }
+    if (towns.length < 2) {
+        showMessage('Not enough towns to shuffle.');
+        return;
     }
+
+    shuffleArray(towns);
+    $('#towns').empty().append(towns);
+
+    showMessage('Towns shuffled.');
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function showMessage(message) {
+    $('#result')
+        .stop(true, true)
+        .text(message)
+        .show();
+
+    setTimeout(() => {
+        $('#result').hide('blind', {}, 500);
+    }, 3000);
 }
